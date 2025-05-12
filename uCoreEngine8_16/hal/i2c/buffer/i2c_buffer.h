@@ -94,29 +94,6 @@ typedef struct {
 
 
 /******************************************************************************
-***** I2C Buffer Interface
-*******************************************************************************/
-typedef struct {   
-    uc_return_status_t (*set_client_address)(uint8_t i2c_address, uc_i2c_buffer_request_type_t request_type);
-    uc_return_status_t (*set_my_address)(uint8_t my_i2c_address);
-    uc_return_status_t (*load_tx_data_byte)(uint8_t tx_data);
-    uc_return_status_t (*host_mode_mark_ready)(void);
-    void (*reset)(void);
-    uc_return_status_t (*load_tx_data_block)(uint8_t *data_block, uint8_t block_byte_count);
-    uc_i2c_buffer_status_t (*get_status)(void);
-    uint8_t (*get_tx_byte_count)(void);
-    uint8_t (*get_client_address)(void);
-    uc_i2c_buffer_request_type_t (*get_request_type)(void);
-    uint8_t (*get_tx_byte)(void);
-    void (*set_result)(uc_i2c_buffer_result_t result_status);
-    uc_i2c_buffer_result_t (*get_result)(void);
-}uc_i2c_0_buffer_interface_t;
-
-extern const uc_i2c_0_buffer_interface_t I2C_0_BUFFER;
-
-
-
-/******************************************************************************
 * Function Prototypes
 *******************************************************************************/
 uc_return_status_t uc_hal_i2c_buffer_set_client_address (uint8_t i2c_address, uc_i2c_buffer_request_type_t request_type);
@@ -132,6 +109,9 @@ uc_i2c_buffer_request_type_t uc_hal_i2c_buffer_get_request_type(void);
 uint8_t uc_hal_i2c_buffer_get_data_tx_byte(void);
 void uc_hal_i2c_buffer_set_result(uc_i2c_buffer_result_t result_status);
 uc_i2c_buffer_result_t uc_hal_i2c_buffer_get_result(void);
+uc_return_status_t uc_hal_i2c_buffer_host_mode_mark_in_progress(void);
+uc_return_status_t uc_hal_i2c_buffer_host_mode_mark_done(void);
+uc_return_status_t uc_hal_i2c_buffer_load_rx_data_byte (uint8_t rx_data);
 #endif /*_H_*/
 
 /*** End of File **************************************************************/

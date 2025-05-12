@@ -41,13 +41,13 @@
 /******************************************************************************
 * Includes
 *******************************************************************************/
-#include "../uc_system_timer.h"
-
-#if (UC_SYSTEM_TIMER && UC_UCORE_MCU_18F)   
 
 #ifndef _UC_SYSTEM_TIMER_18F_H
 #define _UC_SYSTEM_TIMER_18F_H
 
+#include "../uc_system_timer.h"
+
+#if (UC_SYSTEM_TIMER && UC_UCORE_MCU_18F) 
 
 /******************************************************************************
 ***** uCore System Timer Interface

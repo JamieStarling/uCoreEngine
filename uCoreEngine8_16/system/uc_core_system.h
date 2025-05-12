@@ -39,8 +39,8 @@
 /******************************************************************************
 * Includes
 *******************************************************************************/
-#ifndef _UC_CORE_SYSTEM_FUNCTIONS
-#define _UC_CORE_SYSTEM_FUNCTIONS
+#ifndef _UC_CORE_SYSTEM_FUNCTIONS_H
+#define _UC_CORE_SYSTEM_FUNCTIONS_H
 
 #include "../ucore8-16.h"
 
@@ -99,6 +99,6 @@ extern const uc_system_interface_t UC_SYSTEM;
 void uc_system_init(void);
 
 
-#endif /*UC_CORE_SYSTEM_FUNCTIONS*/
+#endif /*_UC_CORE_SYSTEM_FUNCTIONS_H*/
 
 /*** End of File **************************************************************/

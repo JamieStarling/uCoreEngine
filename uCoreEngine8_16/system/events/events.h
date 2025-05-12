@@ -41,8 +41,8 @@
 /******************************************************************************
 * Includes
 *******************************************************************************/
-#ifndef _UC_CORE_EVENTS_H
-#define _UC_CORE_EVENTS_H
+#ifndef _UC_SYSTEM_EVENTS_H
+#define _UC_SYSTEM_EVENTS_H
 
 #include "../uc_core_system.h"
 

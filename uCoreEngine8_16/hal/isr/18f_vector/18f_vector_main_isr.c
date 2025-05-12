@@ -84,7 +84,7 @@ void __interrupt(irq(U1RX), base(UC_ISR_BASE_ADDRESS)) isr_irq_u1rx(void)
 /******************************************************************************
 * ISR for : I2C 0 
 *******************************************************************************/
-void __interrupt(irq(I2C1TX), base(UC_ISR_BASE_ADDRESS)) isr_irq_i2c1_transmit(void)
+void __interrupt(irq(I2C1TX), base(UC_ISR_BASE_ADDRESS)) isr_irq_i2c1_tx(void)
 {
   if (uc_vector_handlers[IRQ_I2C1TX])uc_vector_handlers[IRQ_I2C1TX]();
 }
@@ -95,6 +95,15 @@ void __interrupt(irq(I2C1TX), base(UC_ISR_BASE_ADDRESS)) isr_irq_i2c1_transmit(v
 void __interrupt(irq(I2C1), base(UC_ISR_BASE_ADDRESS)) isr_irq_i2c1(void)
 {
   if (uc_vector_handlers[IRQ_I2C1])uc_vector_handlers[IRQ_I2C1]();
+  
+}
+
+/******************************************************************************
+* ISR for : I2C 0 
+*******************************************************************************/
+void __interrupt(irq(I2C1RX), base(UC_ISR_BASE_ADDRESS)) isr_irq_i2c1_rx(void)
+{
+  if (uc_vector_handlers[IRQ_I2C1RX])uc_vector_handlers[IRQ_I2C1RX]();
   
 }
 

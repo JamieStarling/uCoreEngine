@@ -41,12 +41,12 @@
 /******************************************************************************
 ***** Includes
 *******************************************************************************/
+#ifndef _UC_SYSTEM_DELAYS_H
+#define _UC_SYSTEM_DELAYS_H
+
 #include "../uc_core_system.h"
 
 #if UC_SYSTEM_DELAYS
-
-#ifndef UC_SYSTEM_DELAYS_H
-#define UC_SYSTEM_DELAYS_H
 
 /******************************************************************************
 ***** uCore Systel Delays Interface

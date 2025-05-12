@@ -41,8 +41,8 @@
 *******************************************************************************/
 #include "../ucore8-16.h"
 
-#ifndef _UC_PROCESSORS_H
-#define _UC_PROCESSORS_H
+#ifndef _UC_ENGINE_PROCESSORS_H
+#define _UC_ENGINE_PROCESSORS_H
 
 
 /******************************************************************************

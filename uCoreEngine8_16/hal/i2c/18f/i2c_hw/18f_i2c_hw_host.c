@@ -48,8 +48,11 @@
 const uc_hal_I2C_host_interface_t I2C_HOST = {
   .initialize = &uc_hal_i2c_host_init,  
   .reset = &uc_hal_i2c_host_reset,
-  //.write_data = &uc_hal_i2c_master_write_data,
-  //.read_data = &uc_hal_i2c_read_data,  
+  .load_data = &uc_hal_i2c_host_load_data,  
+  .status = &uc_hal_i2c_host_get_status,
+  .buffer_status = &uc_hal_i2c_buffer_get_status,
+  .buffer_result = &uc_hal_i2c_buffer_get_result,
+  .reset_buffer = &uc_hal_i2c_buffer_reset
 };
 
 uc_i2c_state_t i2c_host_status = UC_I2C_STATE_IDLE;
@@ -97,13 +100,8 @@ void uc_hal_i2c_host_init(void)
   
     
     ISR_CONTROL.register_handler(IRQ_I2C1TX,uc_hal_i2c_host_isr_load_data);
-    ISR_CONTROL.register_handler(IRQ_I2C1,uc_hal_i2c_host_isr);
-    
-    
-    
-    //I2C1EIE error irq
-    //I2C1TXIE?I2C1 Transmit Interrupt Enable
-    //I2C1RXIE?I2C1 Receive Interrupt Enable
+    ISR_CONTROL.register_handler(IRQ_I2C1,uc_hal_i2c_host_isr);   
+    ISR_CONTROL.register_handler(IRQ_I2C1RX,uc_hal_i2c_host_isr_receive_data);
     
     uc_hal_i2c_host_reset();
 }
@@ -120,6 +118,7 @@ void uc_hal_i2c_host_reset(void)
     I2C1STAT1bits.TXWE = 0; //Clear Transmit Write Error
     I2C1STAT1bits.RXRE = 0; //Clear Receive Write Error  
     uc_hal_i2c_host_set_status(UC_I2C_STATE_IDLE);
+    uc_hal_i2c_buffer_reset();
     __delay_ms(25);
     I2C1CON0bits.EN = 1; //Enable I2C
 }
@@ -138,13 +137,16 @@ uc_return_status_t uc_hal_i2c_host_load_data(uint8_t address,
                                              uc_logic_t send_on_complete)
 {
   uc_return_status_t load_status;
-  load_status = I2C_0_BUFFER.set_client_address(address,mode); 
+  //Load the client address into buffer
+  load_status = uc_hal_i2c_buffer_set_client_address(address,mode); 
   if (load_status != UC_STATUS_OK){return UC_STATUS_FAILED;}
-  load_status =  I2C_0_BUFFER.load_tx_data_block(data_block,block_byte_count);
+  
+  //Load the Datablocks, if any
+  load_status =  uc_hal_i2c_buffer_load_tx_data_block(data_block,block_byte_count);
   if (load_status != UC_STATUS_OK){return UC_STATUS_FAILED;}
   
   if (send_on_complete == UC_TRUE){
-      I2C_0_BUFFER.host_mode_mark_ready();
+      uc_hal_i2c_buffer_host_mode_mark_ready();  //Mark the buffer as ready
       if (uc_hal_i2c_host_start_transfer()!= UC_STATUS_OK){return UC_STATUS_FAILED;}
     }
     
@@ -160,24 +162,26 @@ uc_return_status_t uc_hal_i2c_host_load_data(uint8_t address,
 *******************************************************************************/
 uc_return_status_t uc_hal_i2c_host_start_transfer(void)
 {
-  if (I2C_0_BUFFER.get_status() != UC_I2C_STATUS_READY){return UC_STATUS_FAILED;}
+  //if (uc_hal_i2c_buffer_get_status() != UC_I2C_STATUS_READY){return UC_STATUS_FAILED;}
+  uc_hal_i2c_buffer_host_mode_mark_in_progress();
   
   //Load the Address
-  if (I2C_0_BUFFER.get_request_type()== UC_I2C_READ_ONLY){
-      I2C1ADB1 = (uint8_t)(I2C_0_BUFFER.get_client_address() << 1) | 1;   //Load the Address Register for Read
+  if (uc_hal_i2c_buffer_get_request_type()== UC_I2C_READ_ONLY){
+      I2C1ADB1 = (uint8_t)(uc_hal_i2c_buffer_get_client_address() << 1) | 1;   //Load the Address Register for Read
     }  
   else{
-      I2C1ADB1 = (uint8_t)(I2C_0_BUFFER.get_client_address() << 1) | 0;   //Load the Address Register for Write
+      I2C1ADB1 = (uint8_t)(uc_hal_i2c_buffer_get_client_address() << 1) | 0;   //Load the Address Register for Write
     }
   
   //Load the data byte count 
-  I2C1CNTL = I2C_0_BUFFER.get_tx_byte_count();        
+  I2C1CNTL = uc_hal_i2c_buffer_get_tx_byte_count();        
   
   I2C1PIRbits.PCIF = 0;             // Clear pending stop
   
   //ISR Enable
   PIE7bits.I2C1IE = 1;    // I2C interrupt enable
   PIE7bits.I2C1TXIE = 1;  // I2C interrupt enable TX buffer empty
+  PIE7bits.I2C1RXIE = 1; 
   I2C1PIEbits.CNTIE = 1;  //Enable IRQ on Byte Count = 0
   I2C1PIEbits.PCIE = 1;   //Enable IRQ on Start Condition
   I2C1PIEbits.SCIE = 1;   ///Enable IRQ on Stop Condition
@@ -221,15 +225,18 @@ void uc_hal_i2c_host_set_status(uc_i2c_state_t i2c_host_set_status)
 * <DESCRIPTION>
 *  
 *******************************************************************************/
-void uc_hal_i2c_host_check_nack_address(void)
+void uc_hal_i2c_host_check_nack(void)
 {
     //Check to see if this was an address check
     if (uc_hal_i2c_host_get_status()==UC_I2C_STATE_SEND_ADDR)
     {
-        if (I2C1CON1bits.ACKSTAT) {I2C_0_BUFFER.set_result(UC_I2C_RESULT_INVALID_ADDRESS);}
-    }        
+        if (I2C1CON1bits.ACKSTAT) {uc_hal_i2c_buffer_set_result(UC_I2C_RESULT_INVALID_ADDRESS);}
+    }
+    if (uc_hal_i2c_host_get_status()==UC_I2C_STATE_SEND_DATA)
+    {
+        if (I2C1CON1bits.ACKSTAT) {uc_hal_i2c_buffer_set_result(UC_I2C_RESULT_NACK);}
+    }    
 }
-
 
 
 /******************************************************************************
@@ -241,9 +248,9 @@ void uc_hal_i2c_host_check_nack_address(void)
 *******************************************************************************/
 void uc_hal_i2c_host_isr_load_data(void)
 { 
-  uc_hal_i2c_host_check_nack_address();
+  uc_hal_i2c_host_check_nack();
   uc_hal_i2c_host_set_status(UC_I2C_STATE_SEND_DATA); 
-  I2C1TXB = I2C_0_BUFFER.get_tx_byte();  
+  I2C1TXB = uc_hal_i2c_buffer_get_data_tx_byte();  
 }
 
 /******************************************************************************
@@ -262,17 +269,59 @@ void uc_hal_i2c_host_isr(void)
       }
     //STOP Condition IRQ
     if (I2C1PIRbits.PCIF){
-        uc_hal_i2c_host_set_status(UC_I2C_STATE_DONE); 
+        uc_hal_i2c_host_set_status(UC_I2C_STATE_IDLE);
+        uc_hal_i2c_buffer_host_mode_mark_done();
         UC_EVENTS.post(UC_EVENT_I2C_0_COMPLETE,NULL);
         I2C1PIRbits.PCIF = 0;        
       }
     //Byte Count is 0
     if (I2C1PIRbits.CNTIF){
-        uc_hal_i2c_host_check_nack_address();        
+        uc_hal_i2c_host_check_nack();        
         uc_hal_i2c_host_set_status(UC_I2C_STATE_STOP);         
         I2C1PIRbits.CNTIF = 0;        
       }   
 }
+
+
+/******************************************************************************
+* Function : uc_hal_i2c_host_isr_receive_data
+* \b Description: ISR Function to load data into transmit buffer when I2C1TXIF is set. 
+*
+* <DESCRIPTION>
+*  
+*******************************************************************************/
+void uc_hal_i2c_host_isr_receive_data(void)
+{ 
+  uc_hal_i2c_host_check_nack();
+  uc_hal_i2c_host_set_status(UC_I2C_STATE_RECEIVE_DATA); 
+  uint8_t i2c_data = I2C1RXB; // Store data
+  uc_hal_i2c_buffer_load_rx_data_byte(i2c_data);
+  I2C1CON1bits.ACKDT = 0;  //Ack Data
+}
+
+
+
+void uc_hal_i2c_host_restart_enable(void)
+{
+    I2C1CON0bits.RSEN = 1;  
+}
+
+void uc_hal_i2c_host_restart_disable(void)
+{
+    I2C1CON0bits.RSEN = 0;  
+}
+
+void uc_hal_i2c_host_read_enable(void)
+{
+  
+}
+
+void uc_hal_i2c_host_read_disable(void)
+{
+    
+}
+
+ 
 
 
 #endif

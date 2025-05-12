@@ -38,14 +38,12 @@
 *****************************************************************************/
 
 
-
+#ifndef _UC_SYSTEM_TIMER_16F_H
+#define _UC_SYSTEM_TIMER_16F_H
 /******************************************************************************
 ***** Includes
 *******************************************************************************/
 #include "../uc_system_timer.h"
-
-#ifndef _UC_SYSTEM_TIMER_16F_H
-#define _UC_SYSTEM_TIMER_16F_H
 
 #if (UC_SYSTEM_TIMER && UC_UCORE_MCU_16F)   
 

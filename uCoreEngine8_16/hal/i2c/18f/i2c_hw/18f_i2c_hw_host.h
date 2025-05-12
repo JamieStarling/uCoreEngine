@@ -59,7 +59,8 @@ uc_i2c_state_t uc_hal_i2c_host_get_status(void);
 void uc_hal_i2c_host_set_status(uc_i2c_state_t i2c_host_set_status);
 void uc_hal_i2c_host_isr_load_data(void);
 void uc_hal_i2c_host_isr(void);
-void uc_hal_i2c_host_check_nack_address(void);
+void uc_hal_i2c_host_check_nack(void);
+void uc_hal_i2c_host_isr_receive_data(void);
 
 #endif /*_H_*/
 #endif

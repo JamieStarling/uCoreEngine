@@ -47,6 +47,7 @@
 #ifndef _UC_PROCESSOR_PIC18F2xQ84_H
 #define _UC_PROCESSOR_PIC18F2xQ84_H
 
+
 /*Sets the Pointer Register Size - Set accordingly depending on target CPU*/
 #define UC_POINTER_REGISTER_SIZE uint8_t
 
@@ -90,6 +91,7 @@
 #define UC_PROCESSOR_HAL_PWM6          UC_SYSTEM_DISABLE
 
 /***** I2C **************************************************/
+#define UC_PROCESSOR_HAL_I2C_ENABLE    UC_SYSTEM_ENABLE
 #define UC_PROCESSOR_HAL_I2C_HOST      UC_SYSTEM_ENABLE
 #define UC_PROCESSOR_HAL_I2C_CLIENT    UC_SYSTEM_DISABLE
 

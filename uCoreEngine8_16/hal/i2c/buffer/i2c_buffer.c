@@ -46,27 +46,6 @@ uc_i2c_buffer_t i2c_0_buffer = {0};
 
 
 /******************************************************************************
-***** I2C Buffer Interface
-*******************************************************************************/
-const uc_i2c_0_buffer_interface_t I2C_0_BUFFER= { 
-  .set_client_address = &uc_hal_i2c_buffer_set_client_address,
-  .set_my_address = &uc_hal_i2c_buffer_set_my_address,
-  .load_tx_data_byte = &uc_hal_i2c_buffer_load_tx_data_byte,
-  .load_tx_data_block = &uc_hal_i2c_buffer_load_tx_data_block,
-  .get_status = &uc_hal_i2c_buffer_get_status,
-  .get_tx_byte_count = &uc_hal_i2c_buffer_get_tx_byte_count,
-  .get_client_address = &uc_hal_i2c_buffer_get_client_address,
-  .get_request_type = &uc_hal_i2c_buffer_get_request_type,
-  .get_tx_byte = &uc_hal_i2c_buffer_get_data_tx_byte,
-  .host_mode_mark_ready = &uc_hal_i2c_buffer_host_mode_mark_ready,
-  .set_result = &uc_hal_i2c_buffer_set_result,
-  .get_result = &uc_hal_i2c_buffer_get_result,
-  .reset = &uc_hal_i2c_buffer_reset,
-};
-
-
-
-/******************************************************************************
 * Functions
 *******************************************************************************/
 /******************************************************************************
@@ -117,6 +96,24 @@ uc_return_status_t uc_hal_i2c_buffer_load_tx_data_byte (uint8_t tx_data)
 }
 
 /******************************************************************************
+* Function : uc_hal_i2c_buffer_load_rx_data_byte
+* \b Description: Loads a byte of data into the Host Data Buffer
+* If Host mode - data is loaded here to be sent to Client
+* If Client mode - data is loaded here to be sent to Host
+* 
+*
+* <DESCRIPTION>
+*  
+*******************************************************************************/
+uc_return_status_t uc_hal_i2c_buffer_load_rx_data_byte (uint8_t rx_data)
+{
+  //if (i2c_0_buffer.status != UC_I2C_STATUS_PENDING){return UC_STATUS_FAILED;}
+  i2c_0_buffer.data_rx[i2c_0_buffer.rx_index] = rx_data;
+  i2c_0_buffer.rx_index++;
+  return UC_STATUS_OK;
+}
+
+/******************************************************************************
 * Function : uc_hal_i2c_buffer_host_mode_mark_ready
 * \b Description: Sets the i2c buffer as ready for Host Mode
 * If Host mode - Sets data is ready
@@ -132,6 +129,22 @@ uc_return_status_t uc_hal_i2c_buffer_host_mode_mark_ready(void)
   i2c_0_buffer.tx_index = 0;
   return UC_STATUS_OK;
 }
+
+uc_return_status_t uc_hal_i2c_buffer_host_mode_mark_in_progress(void)
+{
+  if (i2c_0_buffer.status != UC_I2C_STATUS_READY){return UC_STATUS_FAILED;}
+  i2c_0_buffer.status = UC_I2C_STATUS_IN_PROGRESS;  // Mark Buffer In Progress
+  return UC_STATUS_OK;
+}
+
+uc_return_status_t uc_hal_i2c_buffer_host_mode_mark_done(void)
+{
+  if (i2c_0_buffer.status != UC_I2C_STATUS_IN_PROGRESS){return UC_STATUS_FAILED;}
+  i2c_0_buffer.status = UC_I2C_STATUS_DONE;  // Mark Buffer In Progress
+  if (i2c_0_buffer.result == UC_I2C_RESULT_NONE){i2c_0_buffer.result = UC_I2C_RESULT_SUCCESS;}
+  return UC_STATUS_OK;
+}
+
 
 /******************************************************************************
 * Function : uc_hal_i2c_buffer_reset

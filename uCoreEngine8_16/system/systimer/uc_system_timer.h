@@ -40,12 +40,10 @@
 /******************************************************************************
 * Includes
 *******************************************************************************/
-#include "../uc_core_system.h"
-
 #ifndef _UC_SYSTEM_TIMER_H
 #define _UC_SYSTEM_TIMER_H
 
-
+#include "../uc_core_system.h"
 
  /*** System Timer ISR Functions 16F Devices    *****************************/
 #if (UC_SYSTEM_TIMER && UC_UCORE_MCU_16F)                             

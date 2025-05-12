@@ -66,7 +66,7 @@ const uc_system_events_interface_t UC_EVENTS = {
 * Functions
 *******************************************************************************/
 /******************************************************************************
-* Function : <NAME>
+* Function : uc_event_init
 *//** 
 * \b Description:
 *
@@ -82,7 +82,12 @@ void uc_event_init(void) {
       }
 }
 
-
+/******************************************************************************
+* Function : uc_event_post
+*//** 
+* \b Description:
+*
+*******************************************************************************/
 bool uc_event_post(uc_system_event_type_t type, void *context) {
     if (event_queue.count >= UC_EVENT_QUEUE_SIZE) {
         return false; // Queue full
@@ -94,7 +99,12 @@ bool uc_event_post(uc_system_event_type_t type, void *context) {
     return true;
 }
 
-
+/******************************************************************************
+* Function : uc_event_register_handler
+*//** 
+* \b Description:
+*
+*******************************************************************************/
 bool uc_event_register_handler(uc_system_event_type_t type, uc_event_callback_t callback) {
     for (int i = 0; i < UC_EVENT_MAX_HANDLERS; i++) {
         if (handlers[i].callback == 0 || handlers[i].type == type) {
@@ -106,7 +116,12 @@ bool uc_event_register_handler(uc_system_event_type_t type, uc_event_callback_t 
     return false;
 }
 
-
+/******************************************************************************
+* Function : uc_event_process_all
+*//** 
+* \b Description:
+*
+*******************************************************************************/
 void uc_event_process_all(void) {
     while (event_queue.count > 0) {
         uc_event_t evt = event_queue.queue[event_queue.tail];
